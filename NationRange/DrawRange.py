@@ -10,6 +10,10 @@ import aiohttp # type: ignore
 import asyncio
 import math
 
+PIXEL_LIMIT=10000
+FILE_SIZE_LIMIT=10485760
+BYTES_IN_MB=1048576
+
 zoom = int(sys.argv[1]) 
 line_thickness = int(sys.argv[2])
 s = 2**(int(zoom)+1)
@@ -18,10 +22,7 @@ padding = 4000//16
 ts = 512
 bpp = 2**(12-int(zoom))
 
-async def draw(homeblocks, name, default_radius=1000/sd, capital_radius=3500/sd):
-    
-    filename=f'natiorange-{name}-{(time.time()):.2f}.png'
-    
+async def draw(homeblocks, filename, default_radius=1000/sd, capital_radius=3500/sd):    
     def coordinates():
         coords = []
         for block in homeblocks:
@@ -84,7 +85,7 @@ async def draw(homeblocks, name, default_radius=1000/sd, capital_radius=3500/sd)
         await download_tiles(tiles)
         
 
-        if total_width > 10000 or total_height > 10000:
+        if total_width > PIXEL_LIMIT or total_height > PIXEL_LIMIT:
             print("One of the dimensions is greater than 10,000 pixels, too big to show on discord try a lower zoom level.")
             return None
         
@@ -162,10 +163,10 @@ async def draw(homeblocks, name, default_radius=1000/sd, capital_radius=3500/sd)
         draw_shape(scaled_shape)
         image2.save(filename)
         size = os.path.getsize(filename)
-        if size > 10485760:
-            print(f"Image size {(size/1048576):.2f}MB exceeds the limit 10MB, try again with a lower zoom level.")
+        if size > FILE_SIZE_LIMIT:
+            print(f"Image size {(size/BYTES_IN_MB):.2f}MB exceeds the limit {FILE_SIZE_LIMIT/BYTES_IN_MB}MB, try again with a lower zoom level.")
             os.remove(filename)
-        elif size < 10485760:
+        elif size < FILE_SIZE_LIMIT:
             image2.show(filename)
             #os.remove(filename) ##add when moved to bot
 

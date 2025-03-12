@@ -4,14 +4,24 @@ import time
 import asyncio
 import sys
 
-nation = sys.argv[3]
+nation_csv = sys.argv[3]
 
 async def main():
     start_time = time.time()
 
-    result = GetHomeblocks.fetch_all_homeblocks(nation)
+    nation_list = nation_csv.split(",")
+	
+    homeblocks = []
+    for nation in nation_list:
+        result = GetHomeblocks.fetch_all_homeblocks(nation)
+        homeblocks.extend(result)
 
-    await DrawRange.draw(result, nation)
+    other_nation_filename = ''
+    if len(nation_list) > 1:
+        other_nation_filename = f'-+{len(nation_list) - 1}'
+
+    filename = f'natiorange-{nation_list[0]}{other_nation_filename}-{(time.time()):.2f}.png'
+    await DrawRange.draw(homeblocks, filename)
 
     print(f"{time.time() - start_time} seconds")
     
